@@ -10,7 +10,6 @@ var connection = mysql.createConnection({
 connection.connect();
 
 
-
 /* LIST ALL AVAILABLE PRODUCTS */
 var listProducts = function() {
     
@@ -39,11 +38,11 @@ var order = function() {
     inquirer.prompt([
         {
             name: "selection",
-            message: "Please select a product ID"
+            message: "Please select a product ID: "
         },
         {
             name: "quantity",
-            message: "How many would you like to purchase?"
+            message: "How many would you like to purchase? "
         }
     ]).then(function(answer) {
         /* define variables for later use */
@@ -56,6 +55,7 @@ var order = function() {
 }
 
 
+/* QUERY THE DATABASE FOR THE SELECTED ORDER, DEFINE VARIABLES, ATTEMPT TO UPDATE */
 var chooseProduct = function(chosenID, chosenQuantity) {
 
     /* retrieves database entry with selected ID */
@@ -68,15 +68,15 @@ var chooseProduct = function(chosenID, chosenQuantity) {
         var price = results[0].price;
         var cost = price * chosenQuantity;
         
-        /* alert if insufficient stock, otherwise update product information */
+        /* alert if insufficient stock, else update product information */
         if (currentStock < chosenQuantity) {
             console.log("Insufficient Quantity!");
+            orderAgain();
         }
         else {
             updateProduct(chosenID, chosenQuantity, currentStock, productName, cost);
+            orderAgain();
         }
-
-        connection.end();
     });
 }
 
@@ -98,9 +98,30 @@ var updateProduct = function(chosenID, chosenQuantity, currentStock, productName
         console.log("Cost: $" + cost);
         console.log("Remaining Stock: " + newStock);
         console.log("----------------------")
+        console.log("\n");
+        console.log("Place another order? (Y/n)");
     })
 }
 
+/* ASKS THE USER TO ORDER AGAIN */
+var orderAgain = function() {
+    inquirer.prompt([
+        {
+            name: "order",
+            type: "confirm",
+            message: " ",
+        },
+    ]).then(function(answer) {
+        /* if they select yes, execute order, else end the connection */
+        if (answer.order) {
+            console.log("\n");
+            order();
+        }
+        else {
+            connection.end();
+        }
+    })
+}
 
 listProducts();
 
