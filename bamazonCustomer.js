@@ -80,6 +80,7 @@ var chooseProduct = function(chosenID, chosenQuantity) {
     });
 }
 
+
 /* UPDATES THE DATABASE AND CONSOLE.LOGS THE ORDER TOTAL*/
 var updateProduct = function(chosenID, chosenQuantity, currentStock, productName, cost) {
     
@@ -103,6 +104,7 @@ var updateProduct = function(chosenID, chosenQuantity, currentStock, productName
     })
 }
 
+
 /* ASKS THE USER TO ORDER AGAIN */
 var orderAgain = function() {
     inquirer.prompt([
@@ -124,4 +126,3 @@ var orderAgain = function() {
 }
 
 listProducts();
-
