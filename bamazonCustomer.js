@@ -1,3 +1,4 @@
+/* INITIALIZE SQL CONNECTION */
 var mysql      = require('mysql');
 var connection = mysql.createConnection({
   host     : 'localhost',
@@ -10,6 +11,17 @@ connection.connect();
 
 
 
+/* LIST ALL AVAILABLE PRODUCTS */
+var listProducts = function() {
+    connection.query("SELECT * FROM products", function (error, results, fields) {
+        if (error) throw error;
+        console.log("result ", results)
+            order();
+    });
+}
+
+
+/* EXECUTES INQUIRER AND STORES THE RESULTS */
 var inquirer = require("inquirer");
 var order = function() {
     inquirer.prompt([
@@ -24,41 +36,48 @@ var order = function() {
     ]).then(function(answer) {
         var chosenID = answer.selection;
         var chosenQuantity = answer.quantity
-        console.log(chosenID);
-        console.log(chosenQuantity);
         chooseProduct(chosenID, chosenQuantity);
     })
 }
 
-var listProducts = function() {
-    connection.query("SELECT * FROM products", function (error, results, fields) {
-        if (error) throw error;
-        console.log("result ", results)
-            order();
-    });
-}
 
 var chooseProduct = function(chosenID, chosenQuantity) {
+
+    /* retrieves database entry with selected ID */
     connection.query("SELECT * FROM products WHERE item_id = ?", [chosenID], function (error, results, fields) {
         if (error) throw error;
-        console.log(results);
-        var currentStock = results[0].stock_quantity
+
+        /* define variables for results */
+        var productName = results [0].product_name;
+        var currentStock = results[0].stock_quantity;
+        var price = results[0].price;
+        var cost = price * chosenQuantity;
+        
+        /* alert if insufficient stock, otherwise run updateProduct */
         if (currentStock < chosenQuantity) {
-            console.log("Insufficient Quantity!")
+            console.log("Insufficient Quantity!");
         }
         else {
-            updateProduct(chosenID, chosenQuantity, currentStock);
+            updateProduct(chosenID, chosenQuantity, currentStock, productName, cost);
         }
+
         connection.end();
     });
 }
 
-
-var updateProduct = function(chosenID, chosenQuantity, currentStock) {
+/* UPDATES THE DATABASE AND CONSOLE.LOGS THE ORDER TOTAL*/
+var updateProduct = function(chosenID, chosenQuantity, currentStock, productName, cost) {
+    
     newStock = (currentStock - chosenQuantity)
+
+    /* updates the database entry stock_quantity */
     connection.query("UPDATE products SET stock_quantity = ? WHERE item_id = ?", [newStock, chosenID], function (error, results, fields) {
         if (error) throw error;
+
+        /* order details and new stock console.logs */
+        console.log(productName);
         console.log("Order: " + chosenQuantity);
+        console.log("Cost: $" + cost);
         console.log("New Stock: " + newStock);
     })
 }
